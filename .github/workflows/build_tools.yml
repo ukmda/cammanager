@@ -22,7 +22,7 @@ jobs:
         run: |
           echo "hello from test"
           conda activate ukmon-admin
-          dir
+          pytest -v ./tests --cov=. --cov-report=term-missing
   build_usermgmt:
     name: build camera manager
     runs-on: win10
