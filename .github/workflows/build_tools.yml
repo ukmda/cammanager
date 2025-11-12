@@ -32,7 +32,6 @@ jobs:
         run: |
           echo "running build step"
           conda activate ukmon-admin
-          cd usermgmt\windows
           pyinstaller ./stationMaint2.py --noconsole --onefile --windowed --icon .\camera.ico
           dir dist
   package_usermgmt:
@@ -44,7 +43,7 @@ jobs:
       - name: packaging
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
-          path: usermgmt\windows\cam_management_setup.iss
+          path: cam_management_setup.iss
   release_usermgmt:
     name: release camera manager
     runs-on: win10
