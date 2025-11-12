@@ -6,3 +6,6 @@ scp
 tksheet
 paramiko
 pyinstaller
+markdown2
+pytest
+pytest-cov

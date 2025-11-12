@@ -33,7 +33,7 @@ jobs:
           echo "running build step"
           conda activate ukmon-admin
           pyinstaller ./stationMaint2.py --noconsole --onefile --windowed --icon .\camera.ico
-          dir dist
+          markdown2 ./README.md > README.html
   package_usermgmt:
     name: package camera manager
     runs-on: win10

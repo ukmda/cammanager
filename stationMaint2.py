@@ -24,6 +24,7 @@ import logging.handlers
 import shutil
 import platform
 import subprocess
+import webbrowser
 
 
 log = logging.getLogger("logger")
@@ -918,13 +919,8 @@ class CamMaintenance(Frame):
     
     def viewReadme(self):
         docfile = os.path.join(self.config_dir, 'README.md')
-        if platform.system() == 'Darwin':       # macOS
-            procid = subprocess.Popen(('open', docfile))
-        elif platform.system() == 'Windows':    # Windows
-            procid = subprocess.Popen(('cmd','/c',f'notepad {docfile}'))
-        else:                                   # linux variants
-            procid = subprocess.Popen(('xdg-open', docfile))
-        procid.wait()
+        webbrowser.open(docfile)
+        return 
 
     def aboutBox(self):
         tkMessageBox.showinfo('About', 
