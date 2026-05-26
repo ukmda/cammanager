@@ -436,6 +436,7 @@ class CamMaintenance(Frame):
 
     def begin_edit_cell(self, event):
         self.oldval = self.data[event[0]][event[1]]
+        print(f'oldval is {self.oldval}')
         return self.oldval
 
     def end_edit_cell(self, event):
