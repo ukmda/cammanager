@@ -66,4 +66,4 @@ The tool also provides some other functionality:
   * Update the AWS key - force an update of the location's AWS key. Note that keys are autorolled every 60 days so this would only be needed if the key had been compromised.
 
 # Copyright
-All code Copyright (C) 2018-2023 Mark McIntyre
+All code Copyright (C) 2018- Mark McIntyre
