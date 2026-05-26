@@ -2,7 +2,7 @@
 
 [Setup]
 AppName=UKMON Camera Management
-AppVersion="2.0.0"
+AppVersion="2.1.0"
 AppPublisher=UK Meteor Network
 AppPublisherURL=https://www.ukmeteornetwork.org
 DefaultDirName={localappdata}\programs\cameraMgmt
