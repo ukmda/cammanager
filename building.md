@@ -1,4 +1,2 @@
 # How to build
-``` bash
-pyinstaller -i .\camera.ico --onefile -w .\stationMaint2.py
-```
+The application is automatically built by the github action, and a copy of the built installer package placed in c:\temp

@@ -17,7 +17,7 @@ jobs:
     runs-on: win10
     steps:
       - name: "☁️ checkout repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: testing
         run: |
           conda activate ukmon-admin
@@ -40,7 +40,7 @@ jobs:
       - build_usermgmt
     steps:
       - name: packaging
-        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.8
         with:
           path: cam_management_setup.iss
   release_usermgmt:
@@ -54,11 +54,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.UKMDA_MM_PAT }}
         with:
-          file: e:\temp\setup_cameraMgmt.exe
+          file: c:\temp\setup_cameraMgmt.exe
           tags: true
           draft: true
           overwrite: true
-          tag_name: 2025.11.1
+          tag_name: 2026.05.1
           default_release_name: Camera Management Tool
           default_release_body_path: README.md
   cleanup_usermgmt:
