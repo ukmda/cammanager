@@ -47,7 +47,7 @@ def loadConfig(cfgdir):
     cfg = ConfigParser()
     cfg.read(config_file)
     server = cfg['helper']['helperip'] 
-    user = cfg['helper']['user']
+    user = cfg['helper']['keyuser']
     keyfile = cfg['helper']['sshkey']
     k = paramiko.RSAKey.from_private_key_file(os.path.expanduser(keyfile))
     c = paramiko.SSHClient()
@@ -610,7 +610,7 @@ class CamMaintenance(Frame):
         camid = curdata[1].upper()
 
         server = self.cfg['helper']['helperip'] 
-        user='ec2-user'
+        user=self.cfg['helper']['user'] 
         keyfile = self.cfg['helper']['sshkey']
         k = paramiko.RSAKey.from_private_key_file(os.path.expanduser(keyfile))
         c = paramiko.SSHClient()
@@ -658,7 +658,7 @@ class CamMaintenance(Frame):
     
     def resyncLocalFiles(self):
         server = self.cfg['helper']['helperip'] 
-        user='ec2-user'
+        user=self.cfg['helper']['user'] 
         keyfile = self.cfg['helper']['sshkey'] 
         k = paramiko.RSAKey.from_private_key_file(os.path.expanduser(keyfile))
         c = paramiko.SSHClient()
@@ -695,7 +695,7 @@ class CamMaintenance(Frame):
 
     def uploadPlatepar(self, camdets, plateparfile):
         server = self.cfg['helper']['helperip'] 
-        user='ec2-user'
+        user = self.cfg['helper']['user'] 
         uplfile = f'/tmp/platepar_cmn2010_{camdets[1]}.cal'
         camname = f'{camdets[0]}_{camdets[3]}'.lower()
         keyfile = self.cfg['helper']['sshkey'] 
@@ -770,7 +770,7 @@ class CamMaintenance(Frame):
 
     def createNewAwsKey(self, location, caminfo):
         server = self.cfg['helper']['helperip'] 
-        user='ec2-user'
+        user = self.cfg['helper']['user'] 
         keyfile = self.cfg['helper']['sshkey'] 
         k = paramiko.RSAKey.from_private_key_file(os.path.expanduser(keyfile))
         c = paramiko.SSHClient()
@@ -791,7 +791,7 @@ class CamMaintenance(Frame):
 
     def getSSHkey(self, loc, dir):
         server= self.cfg['helper']['helperip'] 
-        user='ec2-user'
+        user = self.cfg['helper']['user'] 
         tmpdir=os.getenv('TEMP', default='c:/temp')
         cameraname = (loc + '_' + dir).lower()
         keyfile = self.cfg['helper']['sshkey']
@@ -821,7 +821,7 @@ class CamMaintenance(Frame):
 
     def addNewUnixUser(self, location, cameraname, oldcamname='', updatemode=0):
         server = self.cfg['helper']['helperip'] 
-        user='ec2-user'
+        user=self.cfg['helper']['maintuser'] 
         log.info(f'adding new Unix user {cameraname}')
         keyfile = self.cfg['helper']['sshkey'] 
         k = paramiko.RSAKey.from_private_key_file(os.path.expanduser(keyfile))
@@ -860,7 +860,7 @@ class CamMaintenance(Frame):
     def disableEnableUnixUser(self, loc, dir, enable):
         cameraname = loc.lower() + '_' + dir.lower()
         server = self.cfg['helper']['helperip'] 
-        user='ec2-user'
+        user = self.cfg['helper']['user'] 
         log.info(f'updating Unix user {cameraname}')
         keyfile = self.cfg['helper']['sshkey'] 
         k = paramiko.RSAKey.from_private_key_file(os.path.expanduser(keyfile))

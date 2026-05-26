@@ -10,7 +10,7 @@ DefaultGroupName=UKMON
 UninstallDisplayIcon={app}\stationMaint2.exe
 Compression=lzma2
 SolidCompression=yes
-OutputDir=e:\temp
+OutputDir=c:\temp 
 OutputBaseFilename=setup_cameraMgmt
 PrivilegesRequired=lowest
 

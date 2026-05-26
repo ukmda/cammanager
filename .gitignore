@@ -6,3 +6,6 @@ sshkeys/*
 logs/*
 stationdetails/*
 README.html
+dist/*
+build/*
+*.spec
