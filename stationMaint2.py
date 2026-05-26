@@ -32,11 +32,13 @@ log = logging.getLogger("logger")
 config_file = ''
 
 
-def loadConfig(cfgdir):
+def loadConfig(cfgdir, doedit=False):
     config_file = os.path.join(cfgdir, 'stationmaint.ini')
     if not os.path.isfile(config_file):
         tkMessageBox.showinfo("Config Missing", 'Please configure before using')
         shutil.copyfile(f'{config_file}.sample', config_file)
+        doedit = True
+    if doedit:
         if platform.system() == 'Darwin':       # macOS
             procid = subprocess.Popen(('open', config_file))
         elif platform.system() == 'Windows':    # Windows
@@ -341,6 +343,8 @@ class CamMaintenance(Frame):
 
         # File menu
         fileMenu = Menu(self.menuBar, tearoff=0)
+        fileMenu.add_command(label="Settings", command=self.settings)
+        fileMenu.add_separator()
         fileMenu.add_command(label="Exit", command=self.on_closing)
 
         camMenu = Menu(self.menuBar, tearoff=0)
@@ -504,6 +508,10 @@ class CamMaintenance(Frame):
 
     def drag_select_columns(self, response):
         pass
+
+    def settings(self):
+        loadConfig(self.config_dir, doedit=True)
+        return 
     
     def on_closing(self):
         outdir = 'stationdetails'
