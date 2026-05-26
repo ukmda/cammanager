@@ -70,4 +70,4 @@ jobs:
     steps:
       - name: delete temp cameramgmt package
         run: |
-          del e:\temp\setup_cameraMgmt.exe
+          del c:\temp\setup_cameraMgmt.exe
