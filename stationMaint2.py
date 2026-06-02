@@ -830,7 +830,7 @@ class CamMaintenance(Frame):
 
     def addNewUnixUser(self, location, cameraname, oldcamname='', updatemode=0):
         server = self.cfg['helper']['helperip'] 
-        user=self.cfg['helper']['maintuser'] 
+        user=self.cfg['helper']['user'] 
         log.info(f'adding new Unix user {cameraname}')
         keyfile = self.cfg['helper']['sshkey'] 
         k = paramiko.RSAKey.from_private_key_file(os.path.expanduser(keyfile))

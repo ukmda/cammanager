@@ -1,10 +1,10 @@
 ---
-- hosts: "{{host | default ('ukmonhelper2')}}"
+- hosts: "{{host | default ('ukmbatch')}}"
   vars_files: 
     - /mnt/c/Users/{{ lookup('env','USER' )}}/apikeys/mqvariables.enc
   vars:
     srcdir: "/mnt/c/Users/{{ lookup('env','USER' )}}/OneDrive/dev/meteorhunting/cammanager/server"
-    destdir: /home/ec2-user/keymgmt
+    destdir: ~/keymgmt
   tasks:
   - name: Ensures {{destdir}} exists
     file: path={{destdir}} state=directory  
