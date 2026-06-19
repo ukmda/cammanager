@@ -31,7 +31,7 @@ log = logging.getLogger("logger")
 
 config_file = ''
 
-version = '2025.11.1'
+version = '2026.06.0'
 
 
 def loadConfig(cfgdir, doedit=False):
