@@ -1,4 +1,5 @@
 # UKMDA User Management
+version: 2025.11.1
 
 This Windows application is used to add/maintain new cameras to the network.  Its use is restricted to members of the UKMON admin team. 
 

@@ -31,6 +31,8 @@ log = logging.getLogger("logger")
 
 config_file = ''
 
+version = '2025.11.1'
+
 
 def loadConfig(cfgdir, doedit=False):
     config_file = os.path.join(cfgdir, 'stationmaint.ini')
@@ -54,8 +56,12 @@ def loadConfig(cfgdir, doedit=False):
     k = paramiko.RSAKey.from_private_key_file(os.path.expanduser(keyfile))
     c = paramiko.SSHClient()
     c.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    c.connect(hostname = server, username = user, pkey = k)
-    scpcli = c.open_sftp()
+    try:
+        c.connect(hostname = server, username = user, pkey = k)
+        scpcli = c.open_sftp()
+    except Exception:
+        log.warning(f'unable to connect to {server}, check config')
+        return None, None
     try:
         handle, tmpfnam = tempfile.mkstemp()
         scpcli.get(f'{user}.csv', tmpfnam)
@@ -314,6 +320,10 @@ class CamMaintenance(Frame):
 
         self.config_dir = cfgdir
         self.cfg, awskeys = loadConfig(cfgdir)
+        retries = 0  
+        while self.cfg is None and retries < 10:
+            self.cfg, awskeys = loadConfig(self.config_dir, doedit=True)
+            retries += 1 
         self.conn = boto3.Session(aws_access_key_id=awskeys['key'], aws_secret_access_key=awskeys['secret']) 
         self.bucket_name = self.cfg['store']['srcbucket'] 
 
@@ -933,7 +943,7 @@ class CamMaintenance(Frame):
 
     def aboutBox(self):
         tkMessageBox.showinfo('About', 
-            'UKMON user / camera maintenance tool.\nAll rights reserved, Mark McIntyre, 2024')
+            f'UKMON user / camera maintenance tool.\nAll rights reserved, Mark McIntyre, 2024, version {version}')
 
 
 def log_timestamp():
