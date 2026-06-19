@@ -16,3 +16,7 @@ push = true
 "stationMaint2.py" = [
     "version = '{version}'"
 ]
+
+".github/workflows/build_tools.yml" = [
+    tag_name: {version}"
+]

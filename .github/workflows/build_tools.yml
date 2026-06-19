@@ -58,7 +58,7 @@ jobs:
           tags: true
           draft: true
           overwrite: true
-          tag_name: 2026.05.1
+          tag_name: 2026.06.0
           default_release_name: Camera Management Tool
           default_release_body_path: README.md
   cleanup_usermgmt:
