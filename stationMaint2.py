@@ -208,7 +208,7 @@ class infoDialog(simpledialog.Dialog):
     '''
     A class to gather or display info on a camera
     '''
-    def __init__(self, parent, title, location, user, email, sshkey='', id=''):
+    def __init__(self, parent, title, location, user, email, sshkey='', id='', direction=''):
         self.data = []
         self.data.append(id)
         self.data.append(location)
@@ -281,6 +281,41 @@ class infoDialog(simpledialog.Dialog):
         self.bind("<Return>", lambda event: self.ok_pressed())
         self.bind("<Escape>", lambda event: self.cancel_pressed())
 
+class sshKeyDialog(simpledialog.Dialog):
+    """
+    A class to ask for a new SSH key
+    """
+    def __init__(self, parent, location, direction, camid):
+        self.stationdetails = parent.stationdetails
+        self.parent = parent
+        self.sshkey = ''
+        self.location = location
+        self.direction = direction
+        self.camid = camid
+        super().__init__(parent, 'Update SSH Key')
+
+    def body(self, frame):
+        self.sshkey_label = tk.Label(frame, width=25, text="SSH key")
+        self.sshkey_label.pack()
+        self.sshkey_box = tk.Entry(frame, width=50)
+        self.sshkey_box.insert(tk.END, self.sshkey)
+        self.sshkey_box.pack()
+
+    def ok_pressed(self):
+        self.sshkey = self.sshkey_box.get().strip()
+        self.destroy()
+
+    def cancel_pressed(self):
+        self.sshkey = ''
+        self.destroy()
+
+    def buttonbox(self):
+        self.ok_button = tk.Button(self, text='OK', width=5, command=self.ok_pressed)
+        self.ok_button.pack(side="left")
+        cancel_button = tk.Button(self, text='Cancel', width=5, command=self.cancel_pressed)
+        cancel_button.pack(side="right")
+        self.bind("<Return>", lambda event: self.ok_pressed())
+        self.bind("<Escape>", lambda event: self.cancel_pressed())
 
 class statOwnerDialog(simpledialog.Dialog):
     '''
@@ -327,12 +362,16 @@ class CamMaintenance(Frame):
         self.conn = boto3.Session(aws_access_key_id=awskeys['key'], aws_secret_access_key=awskeys['secret']) 
         self.bucket_name = self.cfg['store']['srcbucket'] 
 
-        os.makedirs('keys', exist_ok=True)
-        os.makedirs('jsonkeys', exist_ok=True)
-        os.makedirs('csvkeys', exist_ok=True)
-        os.makedirs('users', exist_ok=True)
-        os.makedirs('inifs', exist_ok=True)
-        os.makedirs('sshkeys', exist_ok=True)
+        if sys.platform == 'win32':
+            self.localdatapath = os.path.join(os.getenv('USERPROFILE'), 'userdata','local', 'ukmon_cammanager')
+        else:
+            self.localdatapath = os.path.join(os.getenv('HOME'), '.config', 'ukmon_cammanager')
+        os.makedirs(os.path.join(self.localdatapath,'keys'), exist_ok=True)
+        os.makedirs(os.path.join(self.localdatapath,'jsonkeys'), exist_ok=True)
+        os.makedirs(os.path.join(self.localdatapath,'csvkeys'), exist_ok=True)
+        os.makedirs(os.path.join(self.localdatapath,'users'), exist_ok=True)
+        os.makedirs(os.path.join(self.localdatapath,'inifs'), exist_ok=True)
+        os.makedirs(os.path.join(self.localdatapath,'sshkeys'), exist_ok=True)
 
         self.ddb = self.conn.resource('dynamodb', region_name='eu-west-2')
         try:
@@ -506,6 +545,9 @@ class CamMaintenance(Frame):
 
     def columns_sort(self):
         cursel = self.sheet.get_selected_cells()
+        if len(list(cursel)) < 1: 
+            tkMessageBox.showinfo('Warning', 'Select column first')
+            return 
         col = list(cursel)[0][1]
         log.info(self.hdrs[col])
         pass
@@ -524,7 +566,7 @@ class CamMaintenance(Frame):
         return 
     
     def on_closing(self):
-        outdir = 'stationdetails'
+        outdir = os.path.join(self.localdatapath, 'stationdetails')
         os.makedirs(outdir, exist_ok=True)
         dumpCamTable(outdir=outdir, statdets=self.stationdetails, exportmindets=False)
         log.info('quitting')
@@ -551,6 +593,9 @@ class CamMaintenance(Frame):
     
     def checkLastUpdate(self):
         cursel = self.sheet.get_selected_cells()
+        if len(list(cursel)) < 1: 
+            tkMessageBox.showinfo('Warning', 'Select station first')
+            return 
         cr = list(cursel)[0][0]
         curdata = self.data[cr]
         camid = curdata[1]
@@ -565,6 +610,9 @@ class CamMaintenance(Frame):
 
     def addCopyCamera(self, move=False):
         cursel = self.sheet.get_selected_cells()
+        if len(list(cursel)) < 1: 
+            tkMessageBox.showinfo('Warning', 'Select station first')
+            return 
         cr = list(cursel)[0][0]
         curdata = self.data[cr]
         user = curdata[5]
@@ -587,7 +635,7 @@ class CamMaintenance(Frame):
             rmsid = str(d[0]).upper()
             location = str(d[1]).capitalize()
             cameraname = d[1].lower() + '_' + d[2].lower()
-            with open(os.path.join('sshkeys', cameraname + '.pub'), 'w') as outf:
+            with open(os.path.join(self.localdatapath, 'sshkeys', cameraname + '.pub'), 'w') as outf:
                 outf.write(d[5])
             rowdata=[d[1],d[0],d[2],'2','1',d[3],d[4],d[0]]
             self.sheet.insert_row(values=rowdata, idx=0)
@@ -600,25 +648,29 @@ class CamMaintenance(Frame):
 
     def newSSHKey(self):
         cursel = self.sheet.get_selected_cells()
+        if len(list(cursel)) < 1: 
+            tkMessageBox.showinfo('Warning', 'Select station first')
+            return 
         cr = list(cursel)[0][0]
         curdata = self.data[cr]
-        user,email = self.getUserDetails(self.stationdetails, curdata[1])
-        sshkey = ''
-        id = ''
-        title = 'Update SSH Key'
-        answer = infoDialog(self, title, curdata[0], user, email, sshkey, id)
-        if answer.data[0].strip() != '': 
-            d = answer.data
-            location = str(d[1]).capitalize()
-            cameraname = d[1].lower() + '_' + d[2].lower()
-            with open(os.path.join('sshkeys', cameraname + '.pub'), 'w') as outf:
-                outf.write(d[5])
-            self.addNewUnixUser(location, cameraname, updatemode=2)
+        location = curdata[0]
+        id = curdata[1]
+        currentdir = curdata[2]
+        answer = sshKeyDialog(self, location = location, direction=currentdir, camid = id)
+        if answer.sshkey.strip() != '': 
+            d = answer.sshkey
+            cameraname = curdata[0].lower() + '_' + curdata[2].lower()
+            with open(os.path.join(self.localdatapath, 'sshkeys', cameraname + '.pub'), 'w') as outf:
+                outf.write(d)
+            self.addNewUnixUser(location=location, cameraname=cameraname, updatemode=2)
             self.datachanged = True
         return 
     
     def getPlate(self):
         cursel = self.sheet.get_selected_cells()
+        if len(list(cursel)) < 1: 
+            tkMessageBox.showinfo('Warning', 'Select station first')
+            return 
         cr = list(cursel)[0][0]
         curdata = self.data[cr]
         ppdir = self.cfg['helper']['platepardir'] 
@@ -662,6 +714,9 @@ class CamMaintenance(Frame):
     
     def newPlate(self):
         cursel = self.sheet.get_selected_cells()
+        if len(list(cursel)) < 1: 
+            tkMessageBox.showinfo('Warning', 'Select station first')
+            return 
         cr = list(cursel)[0][0]
         curdata = self.data[cr]
         ppdir =self.cfg['helper']['platepardir'] 
@@ -690,7 +745,7 @@ class CamMaintenance(Frame):
             for fil in flist:
                 copyme = True
                 fname = fil.filename
-                localfname = os.path.join(fldr, fname)
+                localfname = os.path.join(self.localdatapath, fldr, fname)
                 if os.path.isfile(localfname):
                     mtime = os.path.getmtime(localfname)
                     if fil.st_mtime - mtime > 1:
@@ -759,12 +814,9 @@ class CamMaintenance(Frame):
 
     def addNewAwsUser(self, location):
         log.info(f'adding new location {location} to AWS')
-        archkeyf = 'jsonkeys/' + location + '.key'
-        archuserdets = 'users/' + location + '.txt'
-        archcsvf = os.path.join('csvkeys', location + '.csv')
-        os.makedirs('jsonkeys', exist_ok=True)
-        os.makedirs('csvkeys', exist_ok=True)
-        os.makedirs('users', exist_ok=True)
+        archkeyf = os.path.join(self.localdatapath, 'jsonkeys', location + '.key')
+        archuserdets = os.path.join(self.localdatapath, 'users', location + '.txt')
+        archcsvf = os.path.join(self.localdatapath, 'csvkeys', location + '.csv')
 
         iamc = self.conn.client('iam')
         try: 
@@ -851,10 +903,10 @@ class CamMaintenance(Frame):
         except Exception:
             c.connect(hostname = server+'.', username = user, pkey = k)
         scpcli = SCPClient(c.get_transport())
-        scpcli.put(os.path.join('sshkeys', cameraname + '.pub'), 'keymgmt/sshkeys/')
-        scpcli.put(os.path.join('keys', location.lower() + '.key'), 'keymgmt/keys/')
-        scpcli.put(os.path.join('csvkeys', location + '.csv'), 'keymgmt/csvkeys/')
-        scpcli.put(os.path.join('inifs', cameraname + '.ini'), 'keymgmt/inifs/')
+        scpcli.put(os.path.join(self.localdatapath, 'sshkeys', cameraname + '.pub'), 'keymgmt/sshkeys/')
+        scpcli.put(os.path.join(self.localdatapath, 'keys', location.lower() + '.key'), 'keymgmt/keys/')
+        scpcli.put(os.path.join(self.localdatapath, 'csvkeys', location + '.csv'), 'keymgmt/csvkeys/')
+        scpcli.put(os.path.join(self.localdatapath, 'inifs', cameraname + '.ini'), 'keymgmt/inifs/')
         command = f'/home/{user}/keymgmt/addSftpUser.sh {cameraname} {location} {updatemode} {oldcamname}'
         log.info(f'running {command}')
         _, stdout, stderr = c.exec_command(command, timeout=60)
@@ -865,7 +917,7 @@ class CamMaintenance(Frame):
 
         log.info('done, collecting output')
         infname = os.path.join('keymgmt/inifs/',cameraname + '.ini')
-        outfname = os.path.join('./inifs', cameraname + '.ini')
+        outfname = os.path.join(self.localdatapath, 'inifs', cameraname + '.ini')
         while os.path.isfile(outfname) is False:
             try:
                 time.sleep(3)
@@ -909,8 +961,7 @@ class CamMaintenance(Frame):
         livebucket = self.cfg['store']['livebucket'] 
         webbucket = self.cfg['store']['websitebucket'] 
 
-        os.makedirs('keys', exist_ok=True)
-        outf = 'keys/' + location.lower() + '.key'
+        outf = os.path.join(self.localdatapath, 'keys', location.lower() + '.key')
         with open(outf, 'w') as ouf:
             ouf.write('export AWS_DEFAULT_REGION=eu-west-1\n')
             ouf.write(f'export CAMLOC="{location}"\n')
@@ -926,8 +977,7 @@ class CamMaintenance(Frame):
 
     def createIniFile(self, cameraname):
         helperip = self.cfg['helper']['helperip'] 
-        os.makedirs('inifs', exist_ok=True)
-        outf = 'inifs/' + cameraname + '.ini'
+        outf = os.path.join(self.localdatapath, 'inifs', cameraname + '.ini')
         with open(outf, 'w') as outf:
             outf.write('# config data for this station\n')
             outf.write(f'export LOCATION={cameraname}\n')
