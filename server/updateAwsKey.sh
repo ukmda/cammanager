@@ -19,5 +19,5 @@ fi
 conda activate $HOME/miniconda3/envs/${WMPL_ENV}
 
 export AWS_PROFILE=ukmonshared
-python -m maintenance.getUserAndKeyInfo update $targ $force
+python -m maintenance.getUserAndKeyInfo update -s $targ -f $force
 export AWS_PROFILE=
